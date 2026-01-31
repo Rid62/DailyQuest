@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Today's AI Quests - DailyQuest{% endblock %}
+
+{% block content %}
+<div class="daily-quests-container">
+    {% if greeting %}
+    <!-- Morning Greeting -->
+    <section class="greeting-section">
+        <div class="greeting-box">
+            <h2>☀️ Good Morning!</h2>
+            <p class="greeting-text">{{ greeting.greeting_text }}</p>
+        </div>
+    </section>
+
+    <!-- AI Quests -->
+    <section class="quests-section">
+        <h2>Today's Personalized Quests</h2>
+        <div class="quests-grid">
+            {% for quest in greeting.ai_quests %}
+            <div class="quest-card {% if quest.completed %}completed{% endif %}" data-quest-id="{{ quest.id }}">
+                <div class="quest-header">
+                    <span class="category-badge" data-category="{{ quest.category }}">
+                        {{ quest.category }}
+                    </span>
+                    <span class="points-badge">+{{ quest.points }} pts</span>
+                </div>
+
+                <h3>{{ quest.title }}</h3>
+                <p>{{ quest.description }}</p>
+
+                {% if quest.completed %}
+                <div class="completion-badge">
+                    ✓ Completed
+                </div>
+                {% else %}
+                <button class="btn-complete" onclick="completeQuest('{{ quest.id }}')">
+                    Mark as Complete
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Quest Summary -->
+    <section class="summary-section">
+        <div class="summary-box">
+            <h3>Your Progress Today</h3>
+            <div class="progress-info">
+                <div class="progress-item">
+                    <span>Quests Completed:</span>
+                    <strong id="completed-count">{{ greeting.ai_quests|selectattr('completed')|list|length }}</strong> / {{ greeting.ai_quests|length }}
+                </div>
+                <div class="progress-item">
+                    <span>Potential Points:</span>
+                    <strong id="potential-points">
+                        {% set total = greeting.ai_quests|selectattr('completed')|map(attribute='points')|sum(0) %}
+                        {{ total }}
+                    </strong> / {{ greeting.ai_quests|map(attribute='points')|sum }}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <a href="{{ url_for('view_analysis') }}" class="btn-secondary">View Your Coach Profile</a>
+        <a href="{{ url_for('dashboard') }}" class="btn-secondary">Back to Dashboard</a>
+    </div>
+    {% else %}
+    <div class="no-quests">
+        <p>No quests available for today yet.</p>
+        <button class="btn-primary" onclick="generateQuests()">Generate Today's Quests</button>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function completeQuest(questId) {
+    fetch(`/api/complete-ai-quest/${questId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the quest card
+            const card = document.querySelector(`[data-quest-id="${questId}"]`);
+            card.classList.add('completed');
+            card.querySelector('.btn-complete').replaceWith(
+                `<div class="completion-badge">✓ Completed</div>`
+            );
+
+            // Show notification
+            showNotification(`Quest Complete! +${data.points} points 🎉`);
+
+            // Update counter
+            const count = document.getElementById('completed-count');
+            count.textContent = parseInt(count.textContent) + 1;
+
+            // Update points
+            const points = document.getElementById('potential-points');
+            points.textContent = parseInt(points.textContent) + data.points;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function generateQuests() {
+    fetch('/api/generate-daily-quests', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Daily quests generated!');
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function showNotification(message) {
+    const div = document.createElement('div');
+    div.className = 'notification';
+    div.textContent = message;
+    div.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+</script>
+
+<style>
+.daily-quests-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.greeting-section {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.greeting-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.greeting-box h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.greeting-text {
+    font-size: 1.1em;
+    line-height: 1.8;
+}
+
+.quests-section {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.quests-section h2 {
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 1.8em;
+}
+
+.quests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.quest-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f5f5f5 100%);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.quest-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.quest-card.completed {
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+    border-color: #28a745;
+}
+
+.quest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: white;
+}
+
+.category-badge[data-category="Creative"] {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.category-badge[data-category="Learning"] {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.category-badge[data-category="Social"] {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.category-badge[data-category="Health/Physical"] {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.category-badge[data-category="Anti-Routine"] {
+    background: linear-gradient(135deg, #30b0fe 0%, #7b68ee 100%);
+}
+
+.points-badge {
+    background: #667eea;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.quest-card h3 {
+    color: #333;
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.quest-card p {
+    color: #666;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+.btn-complete {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-complete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.completion-badge {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.summary-section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.summary-box {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 5px solid #667eea;
+}
+
+.summary-box h3 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.progress-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.progress-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+}
+
+.progress-item span {
+    color: #666;
+    font-weight: 500;
+}
+
+.progress-item strong {
+    color: #667eea;
+    font-size: 1.3em;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    padding: 12px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.no-quests {
+    background: white;
+    padding: 50px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.no-quests p {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .quests-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .greeting-box {
+        padding: 25px;
+    }
+
+    .greeting-box h2 {
+        font-size: 1.5em;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+    }
+
+    .btn-secondary {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

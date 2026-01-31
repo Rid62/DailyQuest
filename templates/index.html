@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Quest - Task Manager</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <header>
+    <h1>⚔️ Daily Quest</h1>
+    <p>Complete your daily missions and track your progress</p>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="quest-section">
+        <form class="add-quest-form" method="POST" action="/">
+          <input 
+            type="text" 
+            name="quest" 
+            placeholder="Add a new quest..." 
+            required
+            autocomplete="off"
+          >
+          <button type="submit">Add Quest</button>
+        </form>
+
+        {% if tasks %}
+          <ul class="quest-list">
+            {% for task in tasks %}
+              <li class="quest-item {% if task.completed %}completed{% endif %}">
+                <input type="checkbox" class="quest-checkbox" {% if task.completed %}checked{% endif %}>
+                <span class="quest-text">{{ task.name }}</span>
+                <div class="quest-actions">
+                  <form method="POST" action="/delete/{{ loop.index0 }}" style="display: inline;">
+                    <button type="submit" class="btn-delete">Delete</button>
+                  </form>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <p>🎯 No quests yet. Add one to get started!</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>May your quests be legendary! ⭐</p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.quest-checkbox').forEach((checkbox, index) => {
+      checkbox.addEventListener('change', async () => {
+        const response = await fetch(`/toggle/${index}`, { method: 'POST' });
+        if (response.ok) {
+          location.reload();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

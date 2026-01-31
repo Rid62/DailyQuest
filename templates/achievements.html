@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Achievements - DailyQuest{% endblock %}
+
+{% block content %}
+<div class="achievements-container">
+    <h1>Your Achievements</h1>
+
+    <!-- Stats Overview -->
+    <section class="achievement-stats">
+        <div class="stat-box">
+            <h3>Badges Earned</h3>
+            <p class="stat-number">{{ badges|length }}</p>
+        </div>
+        <div class="stat-box">
+            <h3>Challenges Completed</h3>
+            <p class="stat-number">{{ total_completions }}</p>
+        </div>
+        <div class="stat-box">
+            <h3>Level</h3>
+            <p class="stat-number">{{ user.level }}</p>
+        </div>
+        <div class="stat-box">
+            <h3>Total Points</h3>
+            <p class="stat-number">{{ user.points }}</p>
+        </div>
+    </section>
+
+    <!-- Badges Section -->
+    <section class="badges-showcase">
+        <h2>🏆 Your Badges</h2>
+        
+        {% if badges %}
+        <div class="badges-grid">
+            {% for badge in badges %}
+            <div class="badge-showcase">
+                <span class="badge-icon-large">{{ badge.icon }}</span>
+                <h4>{{ badge.name }}</h4>
+                <p>{{ badge.description }}</p>
+                <small>Earned {{ badge.earned_at.strftime('%B %d, %Y') }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-message">No badges yet. Start completing challenges!</p>
+        {% endif %}
+    </section>
+
+    <!-- Available Badges (future goals) -->
+    <section class="future-badges">
+        <h2>🎯 Badges to Unlock</h2>
+        <div class="future-badges-grid">
+            <div class="future-badge">
+                <span class="badge-icon-large">🏆</span>
+                <h4>Dedicated</h4>
+                <p>Complete 10 challenges</p>
+            </div>
+            <div class="future-badge">
+                <span class="badge-icon-large">🔥</span>
+                <h4>On Fire</h4>
+                <p>7-day completion streak</p>
+            </div>
+            <div class="future-badge">
+                <span class="badge-icon-large">⭐</span>
+                <h4>Rising Star</h4>
+                <p>Reach Level 5</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

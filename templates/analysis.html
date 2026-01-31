@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Your AI Coach Analysis - DailyQuest{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <h1>🤖 Your AI Coach Analysis</h1>
+
+    {% if analysis %}
+    <div class="analysis-content">
+        <!-- Welcome Letter Section -->
+        <section class="welcome-letter-section">
+            <h2>💌 Your Welcome Letter</h2>
+            <div class="welcome-box">
+                <p>{{ analysis.welcome_letter|replace('\n', '<br>')|safe }}</p>
+            </div>
+        </section>
+
+        <!-- Coach Vibe Section -->
+        <section class="vibe-section">
+            <h2>🎯 Your Coach's Vibe</h2>
+            <div class="vibe-box">
+                <h3>{{ analysis.suggested_vibe }}</h3>
+                <p>This is how your AI coach will interact with you throughout your journey.</p>
+            </div>
+        </section>
+
+        <!-- Analysis Summary Section -->
+        <section class="analysis-summary-section">
+            <h2>📊 Your Profile Analysis</h2>
+            <div class="summary-box">
+                <p>{{ analysis.analysis_summary|replace('\n', '<br>')|safe }}</p>
+            </div>
+        </section>
+
+        <!-- User Info Section -->
+        <section class="user-info-section">
+            <h2>📝 Your Profile</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Age</label>
+                    <p>{{ user.age }}</p>
+                </div>
+                <div class="info-item">
+                    <label>Situation</label>
+                    <p>{{ user.job_status }}</p>
+                </div>
+                <div class="info-item">
+                    <label>Goals</label>
+                    <p>{{ user.goals }}</p>
+                </div>
+                <div class="info-item">
+                    <label>Main Struggles</label>
+                    <p>{{ user.struggles }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="action-buttons">
+            <a href="{{ url_for('daily_quests') }}" class="btn-primary">
+                👉 View Today's Quests
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">
+                Back to Dashboard
+            </a>
+        </section>
+    </div>
+    {% else %}
+    <div class="no-analysis">
+        <p>You haven't completed onboarding yet.</p>
+        <a href="{{ url_for('onboarding') }}" class="btn-primary">Complete Onboarding</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.analysis-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.analysis-container h1 {
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+    font-size: 2.5em;
+}
+
+.analysis-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+section h2 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.8em;
+}
+
+.welcome-box,
+.summary-box {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 5px solid #667eea;
+    line-height: 1.8;
+    color: #333;
+    font-size: 1.05em;
+}
+
+.vibe-box {
+    background: linear-gradient(135deg, #f093fb15 0%, #f5576c15 100%);
+    padding: 25px;
+    border-radius: 10px;
+    border: 2px solid #f093fb;
+    text-align: center;
+}
+
+.vibe-box h3 {
+    color: #764ba2;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.vibe-box p {
+    color: #666;
+    font-size: 0.95em;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.info-item label {
+    font-weight: bold;
+    color: #667eea;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.info-item p {
+    color: #333;
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 20px 0 !important;
+}
+
+.btn-secondary {
+    background: #999;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #777;
+}
+
+.no-analysis {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.no-analysis p {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .analysis-container h1 {
+        font-size: 2em;
+    }
+
+    section {
+        padding: 20px;
+    }
+
+    section h2 {
+        font-size: 1.5em;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

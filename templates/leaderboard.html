@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - DailyQuest{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <h1>⚔️ Leaderboard</h1>
+    <p class="leaderboard-subtitle">Your rank: #{{ user_rank }}</p>
+
+    <div class="leaderboard-table-wrapper">
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>User</th>
+                    <th>Level</th>
+                    <th>Points</th>
+                    <th>Streak</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="{% if user.id == current_user.id %}highlight{% endif %}">
+                    <td class="rank">
+                        {% if loop.index == 1 %}🥇
+                        {% elif loop.index == 2 %}🥈
+                        {% elif loop.index == 3 %}🥉
+                        {% else %}{{ loop.index }}
+                        {% endif %}
+                    </td>
+                    <td class="username">
+                        {{ user.username }}
+                        {% if user.id == current_user.id %}<span class="you-badge">YOU</span>{% endif %}
+                    </td>
+                    <td class="level">{{ user.level }}</td>
+                    <td class="points">{{ user.points }}</td>
+                    <td class="streak">{{ user.streak }} 🔥</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="leaderboard-info">
+        <p>🏆 Complete challenges daily to climb the leaderboard!</p>
+    </div>
+</div>
+{% endblock %}

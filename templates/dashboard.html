@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - DailyQuest{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- User Stats Section -->
+    <section class="stats-section">
+        <div class="stat-card">
+            <h3>Level</h3>
+            <p class="stat-value" id="user-level">{{ user.level }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Points</h3>
+            <p class="stat-value" id="user-points">{{ user.points }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Streak</h3>
+            <p class="stat-value" id="user-streak">{{ user.streak }} 🔥</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Quests</h3>
+            <p class="stat-value" id="total-quests">{{ total_completions }}</p>
+        </div>
+    </section>
+
+    <!-- Daily Challenge Section -->
+    {% if challenge %}
+    <section class="challenge-section">
+        <h2>Today's Challenges</h2>
+        
+        <!-- Main Challenge Card -->
+        <div class="main-challenge" id="card-{{ challenge.id }}">
+            <div class="challenge-card {% if completed_today %}completed{% endif %}">
+                <div class="challenge-header">
+                    <span class="category-badge" data-category="{{ challenge.category }}">
+                        {{ challenge.category|capitalize }}
+                    </span>
+                    <span class="points-badge">+{{ challenge.points }} pts</span>
+                </div>
+
+                <h3>{{ challenge.title }}</h3>
+                <p>{{ challenge.description }}</p>
+
+                {% if completed_today %}
+                <div class="completion-message">
+                    ✓ You've completed today's challenge!
+                </div>
+                {% else %}
+                <button class="btn-complete" 
+                        data-id="{{ challenge.id }}" 
+                        data-points="{{ challenge.points }}"
+                        onclick="completeChallenge(this)">
+                    Mark as Complete
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Additional Challenges Grid -->
+        {% if challenges %}
+        <div class="challenges-grid">
+            {% for c in challenges %}
+            <div class="challenge-card challenge-card-small" id="card-{{ c.id }}">
+                <div class="challenge-header">
+                    <span class="category-badge" data-category="{{ c.category }}">
+                        {{ c.category|capitalize }}
+                    </span>
+                    <span class="points-badge">+{{ c.points }} pts</span>
+                </div>
+                <h4>{{ c.title }}</h4>
+                <p>{{ c.description }}</p>
+                <button class="btn-complete-small" 
+                        data-id="{{ c.id }}" 
+                        data-points="{{ c.points }}"
+                        onclick="completeChallenge(this)">
+                    Complete
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- Progress Chart -->
+    <section class="charts-section">
+        <div class="chart-container">
+            <h3>Your Progress (Last 30 Days)</h3>
+            <canvas id="progressChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Challenges by Category</h3>
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Badges Section -->
+    {% if badges %}
+    <section class="badges-section">
+        <h2>Your Badges</h2>
+        <div class="badges-grid">
+            {% for badge in badges %}
+            <div class="badge-item" title="{{ badge.description }}">
+                <span class="badge-icon">{{ badge.icon }}</span>
+                <span class="badge-name">{{ badge.name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+function completeChallenge(challengeId) {
+    fetch('/api/complete-challenge/' + challengeId, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`Quest Complete! +${data.points} points 🎉`);
+            document.querySelector('.challenge-card').classList.add('completed');
+            document.querySelector('.btn-complete').replaceWith(
+                `<div class="completion-message">✓ You've completed today's challenge!</div>`
+            );
+            
+            // Update stats
+            document.querySelectorAll('.stat-card')[0].querySelector('.stat-value').textContent = data.level;
+            document.querySelectorAll('.stat-card')[1].querySelector('.stat-value').textContent = data.user_points;
+            document.querySelectorAll('.stat-card')[2].querySelector('.stat-value').textContent = data.streak + ' 🔥';
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function showNotification(message) {
+    const div = document.createElement('div');
+    div.className = 'notification';
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.querySelector('.btn-complete');
+    if (btn) {
+        btn.addEventListener('click', () => completeChallenge(btn.dataset.challengeId));
+    }
+});
+
+// Load and display user stats
+fetch('/api/user-stats')
+    .then(response => response.json())
+    .then(stats => {
+        // Progress chart (daily completions)
+        const dates = Object.keys(stats.daily).sort();
+        const counts = dates.map(d => stats.daily[d]);
+
+        new Chart(document.getElementById('progressChart'), {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Completions',
+                    data: counts,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Category chart
+        const categories = Object.keys(stats.by_category);
+        const points = categories.map(c => stats.by_category[c]);
+
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+                datasets: [{
+                    data: points,
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    });
+
+    // Reactive Complete Challenge Function
+    function completeChallenge(button) {
+        const challengeId = button.getAttribute('data-id');
+        const points = parseInt(button.getAttribute('data-points'));
+        
+        // Disable button immediately
+        button.disabled = true;
+        button.style.opacity = '0.6';
+        
+        // Send request to Flask
+        fetch('/api/complete-challenge/' + challengeId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Change button to green checkmark
+                button.innerText = "✅ Completed!";
+                button.classList.add("completed-btn");
+                
+                // Update stats in real-time
+                document.getElementById('user-points').innerText = data.user_points;
+                document.getElementById('user-level').innerText = data.level;
+                document.getElementById('user-streak').innerText = data.streak + ' 🔥';
+                document.getElementById('total-quests').innerText = parseInt(document.getElementById('total-quests').innerText) + 1;
+                
+                // Change card to completed state
+                const card = document.getElementById('card-' + challengeId);
+                if (card) {
+                    card.style.opacity = '0.7';
+                }
+                
+                // Show level up notification if applicable
+                if (data.leveled_up) {
+                    showLevelUpNotification(data.new_level);
+                }
+                
+                // Show completion notification
+                showNotification(`Quest Complete! +${points} points 🎉`);
+            } else {
+                button.disabled = false;
+                button.style.opacity = '1';
+                showNotification('Error completing challenge', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            button.disabled = false;
+            button.style.opacity = '1';
+            showNotification('Error completing challenge', 'error');
+        });
+    }
+
+    // Notification function
+    function showNotification(message, type = 'success') {
+        const div = document.createElement('div');
+        div.className = 'notification ' + type;
+        div.textContent = message;
+        div.style.position = 'fixed';
+        div.style.top = '20px';
+        div.style.right = '20px';
+        div.style.background = type === 'success' 
+            ? 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' 
+            : 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
+        div.style.color = 'white';
+        div.style.padding = '15px 25px';
+        div.style.borderRadius = '8px';
+        div.style.zIndex = '9999';
+        div.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+        div.style.animation = 'slideInDown 0.3s ease';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+    }
+
+    // Level up notification
+    function showLevelUpNotification(newLevel) {
+        const div = document.createElement('div');
+        div.className = 'level-up-modal';
+        div.innerHTML = `
+            <div class="level-up-content">
+                <h2>🎉 Level Up!</h2>
+                <p>You are now <strong>Level ${newLevel}</strong></p>
+                <div class="confetti"></div>
+            </div>
+        `;
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.height = '100%';
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.justifyContent = 'center';
+        div.style.background = 'rgba(0,0,0,0.5)';
+        div.style.zIndex = '10000';
+        div.style.animation = 'fadeIn 0.3s ease';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+    }
+</script>
+{% endblock %}

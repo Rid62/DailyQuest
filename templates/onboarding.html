@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Onboarding - DailyQuest{% endblock %}
+
+{% block content %}
+<div class="onboarding-container">
+    <div class="onboarding-box">
+        <h1>⚔️ Welcome to DailyQuest</h1>
+        <h2>Let's Get to Know You</h2>
+        <p class="subtitle">Help us personalize your quest journey by answering a few quick questions.</p>
+
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" class="onboarding-form">
+            <div class="form-group">
+                <label for="age">What's your age? *</label>
+                <input 
+                    type="number" 
+                    id="age" 
+                    name="age" 
+                    min="13" 
+                    max="120"
+                    required
+                    placeholder="e.g., 28"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="job_status">What's your current job/life situation? *</label>
+                <select id="job_status" name="job_status" required>
+                    <option value="">Select one...</option>
+                    <option value="Student">Student</option>
+                    <option value="Working Professional">Working Professional</option>
+                    <option value="Manager/Leader">Manager/Leader</option>
+                    <option value="Entrepreneur">Entrepreneur</option>
+                    <option value="Freelancer">Freelancer</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Retired">Retired</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="goals">What are your main goals right now? *</label>
+                <textarea 
+                    id="goals" 
+                    name="goals" 
+                    rows="4"
+                    required
+                    placeholder="e.g., Improve my fitness, Learn a new skill, Build better habits, etc."
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="struggles">What are your main struggles or challenges? *</label>
+                <textarea 
+                    id="struggles" 
+                    name="struggles" 
+                    rows="4"
+                    required
+                    placeholder="e.g., Procrastination, Time management, Motivation, Stress, etc."
+                ></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary btn-large">
+                Generate My Personal AI Coach 🤖
+            </button>
+
+            <p class="onboarding-info">
+                Your responses will be used to create a personalized AI coach that understands your unique situation.
+            </p>
+        </form>
+    </div>
+</div>
+
+<style>
+.onboarding-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.onboarding-box {
+    background: white;
+    padding: 50px;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+}
+
+.onboarding-box h1 {
+    font-size: 2.5em;
+    text-align: center;
+    color: #667eea;
+    margin-bottom: 10px;
+}
+
+.onboarding-box h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.onboarding-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 1.1em;
+}
+
+.onboarding-info {
+    text-align: center;
+    color: #999;
+    font-size: 0.9em;
+    margin-top: 15px;
+}
+
+@media (max-width: 600px) {
+    .onboarding-box {
+        padding: 30px;
+    }
+
+    .onboarding-box h1 {
+        font-size: 2em;
+    }
+}
+</style>
+{% endblock %}
