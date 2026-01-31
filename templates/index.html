@@ -9,8 +9,8 @@
 
 <body>
   <header>
-    <h1>⚔️ Daily Quest</h1>
-    <p>Complete your daily missions and track your progress</p>
+    <h1>⚔️ <span class="i18n" data-en="Daily Quest" data-ar="تحدي اليوم"></span></h1>
+    <p class="i18n" data-en="Complete your daily missions and track your progress" data-ar="أكمل مهامك اليومية وتابع تقدمك"></p>
   </header>
 
   <main>
@@ -20,11 +20,13 @@
           <input 
             type="text" 
             name="quest" 
-            placeholder="Add a new quest..." 
+            placeholder="Add a new quest..."
+            data-en-placeholder="Add a new quest..."
+            data-ar-placeholder="أضف مهمة جديدة..."
             required
             autocomplete="off"
           >
-          <button type="submit">Add Quest</button>
+          <button type="submit" class="i18n" data-en="Add Quest" data-ar="أضف مهمة">Add Quest</button>
         </form>
 
         {% if tasks %}
@@ -43,7 +45,7 @@
           </ul>
         {% else %}
           <div class="empty-state">
-            <p>🎯 No quests yet. Add one to get started!</p>
+            <p class="i18n" data-en="🎯 No quests yet. Add one to get started!" data-ar="🎯 لا توجد مهام بعد. أضف واحدة للبدء!"></p>
           </div>
         {% endif %}
       </section>
@@ -51,7 +53,7 @@
   </main>
 
   <footer>
-    <p>May your quests be legendary! ⭐</p>
+    <p class="i18n" data-en="May your quests be legendary! ⭐" data-ar="لتكن مهامك أسطورية! ⭐"></p>
   </footer>
 
   <script>
@@ -63,6 +65,15 @@
         }
       });
     });
+    // apply placeholders for language-aware inputs
+    (function(){
+      document.querySelectorAll('input[data-en-placeholder]').forEach(inp => {
+        const en = inp.getAttribute('data-en-placeholder');
+        const ar = inp.getAttribute('data-ar-placeholder');
+        const lang = (function(){ try { return localStorage.getItem('dq_lang')||'en'; } catch(e){return 'en';} })();
+        inp.placeholder = (lang === 'ar') ? ar : en;
+      });
+    })();
   </script>
 </body>
 </html>

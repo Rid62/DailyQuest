@@ -11,15 +11,23 @@
     {% if current_user.is_authenticated %}
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ url_for('dashboard') }}" class="nav-logo">⚔️ DailyQuest</a>
+            <a href="{{ url_for('dashboard') }}" class="nav-logo">⚔️ <span class="i18n" data-en="DailyQuest" data-ar="مهمتي"></span></a>
             <ul class="nav-menu">
-                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                <li><a href="{{ url_for('achievements') }}">Achievements</a></li>
-                <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
-                <li><a href="{{ url_for('shop') }}">Shop 🏪</a></li>
-                <li class="nav-user">{{ current_user.username }} (Lvl {{ current_user.level }})</li>
-                <li><a href="{{ url_for('logout') }}" class="btn-logout">Logout</a></li>
+                <li><a href="{{ url_for('dashboard') }}" class="i18n" data-en="Dashboard" data-ar="اللوحة">Dashboard</a></li>
+                <li><a href="{{ url_for('achievements') }}" class="i18n" data-en="Achievements" data-ar="الانجازات">Achievements</a></li>
+                <li><a href="{{ url_for('leaderboard') }}" class="i18n" data-en="Leaderboard" data-ar="التصنيف">Leaderboard</a></li>
+                <li><a href="{{ url_for('shop') }}" class="i18n" data-en="Shop 🏪" data-ar="المتجر 🏪">Shop 🏪</a></li>
+                <li class="nav-user">{{ current_user.username }} (<span class="i18n" data-en="Lvl" data-ar="المستوى">Lvl</span> {{ current_user.level }})</li>
+                <li><a href="{{ url_for('logout') }}" class="btn-logout i18n" data-en="Logout" data-ar="تسجيل خروج">Logout</a></li>
             </ul>
+
+            <div class="lang-toggle">
+                <label for="langSelect" class="sr-only">Language</label>
+                <select id="langSelect" aria-label="Language selector">
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
         </div>
     </nav>
     {% endif %}
@@ -32,7 +40,28 @@
         <p>May your quests be legendary! ⭐</p>
     </footer>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    {% block scripts %}{% endblock %}
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        {% block scripts %}{% endblock %}
+
+        <script>
+        // Simple i18n: swap elements with `i18n` class using data-en / data-ar
+        (function(){
+            const sel = document.getElementById('langSelect');
+            function applyLang(lang){
+                document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+                document.querySelectorAll('.i18n').forEach(el => {
+                    const txt = el.getAttribute('data-' + lang);
+                    if (txt !== null) el.textContent = txt;
+                });
+                // store preference
+                try { localStorage.setItem('dq_lang', lang); } catch(e){}
+                // RTL support
+                document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+            }
+            const saved = (function(){ try { return localStorage.getItem('dq_lang'); } catch(e){return null;} })() || 'en';
+            if (sel) { sel.value = saved; sel.addEventListener('change', e => applyLang(e.target.value)); }
+            applyLang(saved);
+        })();
+        </script>
 </body>
 </html>

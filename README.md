@@ -196,3 +196,7 @@ For issues or questions, check the code comments in `app.py` for detailed explan
 ---
 
 **Happy questing! May your streaks be legendary! ⚔️⭐**
+
+## Language Selection
+
+The web UI supports English and Arabic. Use the language selector in the top-right of the navbar to switch languages; your preference is saved in your browser.
