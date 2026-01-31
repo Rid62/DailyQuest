@@ -111,6 +111,7 @@ class ChallengeCompletion(db.Model):
     challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=False)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
     shared = db.Column(db.Boolean, default=False)
+    proof = db.Column(db.Text)  # User's proof of completion (anti-cheating mechanism)
     
     # Composite unique constraint - user can only complete each challenge once per day
     __table_args__ = (db.UniqueConstraint('user_id', 'challenge_id', 'completed_at', name='unique_daily_completion'),)
@@ -250,7 +251,19 @@ def complete_challenge(challenge_id):
     if existing:
         return jsonify({'error': 'Already completed today'}), 400
     
-    completion = ChallengeCompletion(user_id=current_user.id, challenge_id=challenge_id)
+    # Get proof from request
+    data = request.get_json() or {}
+    proof = data.get('proof', '').strip()
+    
+    # Validate proof (minimum 50 characters)
+    if not proof or len(proof) < 50:
+        return jsonify({'error': 'Proof must be at least 50 characters'}), 400
+    
+    completion = ChallengeCompletion(
+        user_id=current_user.id, 
+        challenge_id=challenge_id,
+        proof=proof  # Store the proof
+    )
     db.session.add(completion)
     
     # Check level before points
@@ -550,7 +563,7 @@ Return the response in a structured JSON format with keys: analysis_summary, wel
         return None
 
 def generate_daily_quests(user):
-    """Generate 5 daily quests using OpenAI"""
+    """Generate 5 daily quests using OpenAI with proof requirements to prevent cheating"""
     try:
         user_profile = f"Age: {user.age}, Job: {user.job_status}, Goals: {user.goals}"
         
@@ -574,7 +587,14 @@ The challenges must be realistic for a {user.age} year old who is {user.job_stat
 
 Include a 'Daily Greeting' that mentions their specific goal ({user.goals}) to show you remember them.
 
-Format the output strictly as JSON: {{"morning_greeting": "...", "quests": [{{"id": 1, "category": "Creative", "title": "...", "description": "...", "points": 15}}, {{"id": 2, "category": "Learning", "title": "...", "description": "...", "points": 15}}, {{"id": 3, "category": "Social", "title": "...", "description": "...", "points": 15}}, {{"id": 4, "category": "Health/Physical", "title": "...", "description": "...", "points": 15}}, {{"id": 5, "category": "Anti-Routine", "title": "...", "description": "...", "points": 15}}]}}"""
+IMPORTANT - Anti-Cheating Requirement:
+For each challenge, include a 'proof_type' field that specifies what proof the user must provide:
+- If category is 'Learning' or 'Creative': proof_type should be 'summary' (user must write 50+ characters explaining what they learned/created)
+- If category is 'Health/Physical': proof_type should be 'description' (user describes the workout, e.g., "30 min run" + duration)
+- If category is 'Social': proof_type should be 'reflection' (user reflects on how it felt)
+- If category is 'Anti-Routine': proof_type should be 'explanation' (user explains the new way they did it)
+
+Format the output strictly as JSON: {{"morning_greeting": "...", "quests": [{{"id": 1, "category": "Creative", "title": "...", "description": "...", "points": 15, "proof_type": "summary"}}, {{"id": 2, "category": "Learning", "title": "...", "description": "...", "points": 15, "proof_type": "summary"}}, {{"id": 3, "category": "Social", "title": "...", "description": "...", "points": 15, "proof_type": "reflection"}}, {{"id": 4, "category": "Health/Physical", "title": "...", "description": "...", "points": 15, "proof_type": "description"}}, {{"id": 5, "category": "Anti-Routine", "title": "...", "description": "...", "points": 15, "proof_type": "explanation"}}]}}"""
 
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",

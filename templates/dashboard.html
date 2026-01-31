@@ -198,61 +198,116 @@ fetch('/api/user-stats')
         });
     });
 
-    // Reactive Complete Challenge Function
+    // Reactive Complete Challenge Function - WITH PROOF REQUIREMENT
     function completeChallenge(button) {
         const challengeId = button.getAttribute('data-id');
         const points = parseInt(button.getAttribute('data-points'));
         
-        // Disable button immediately
-        button.disabled = true;
-        button.style.opacity = '0.6';
+        // Show proof modal instead of completing immediately
+        showProofModal(challengeId, button.innerText.trim(), points);
+    }
+
+    // Show Modal to Request Proof
+    function showProofModal(challengeId, challengeTitle, points) {
+        const modal = document.createElement('div');
+        modal.className = 'proof-modal';
+        modal.innerHTML = `
+            <div class="proof-modal-content">
+                <div class="proof-modal-header">
+                    <h2>📝 Proof of Completion</h2>
+                    <button class="close-modal" onclick="this.closest('.proof-modal').remove()">&times;</button>
+                </div>
+                
+                <div class="proof-modal-body">
+                    <p class="challenge-title">Challenge: <strong>${challengeTitle}</strong></p>
+                    <p class="proof-instruction">Please describe your accomplishment (minimum 50 characters):</p>
+                    
+                    <textarea id="proof-text" 
+                              class="proof-textarea" 
+                              placeholder="Tell us what you accomplished, what you learned, or how it went... (50+ characters)"
+                              minlength="50"
+                              maxlength="1000"></textarea>
+                    
+                    <div class="char-count">
+                        <span id="char-count">0</span>/1000
+                    </div>
+                </div>
+                
+                <div class="proof-modal-footer">
+                    <button class="btn-cancel" onclick="this.closest('.proof-modal').remove()">Cancel</button>
+                    <button class="btn-submit-proof" onclick="submitProof(${challengeId}, ${points})">
+                        Submit & Claim ${points} Points
+                    </button>
+                </div>
+            </div>
+        `;
         
-        // Send request to Flask
-        fetch('/api/complete-challenge/' + challengeId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Change button to green checkmark
-                button.innerText = "✅ Completed!";
-                button.classList.add("completed-btn");
-                
-                // Update stats in real-time
-                document.getElementById('user-points').innerText = data.user_points;
-                document.getElementById('user-level').innerText = data.level;
-                document.getElementById('user-streak').innerText = data.streak + ' 🔥';
-                document.getElementById('total-quests').innerText = parseInt(document.getElementById('total-quests').innerText) + 1;
-                
-                // Change card to completed state
-                const card = document.getElementById('card-' + challengeId);
-                if (card) {
-                    card.style.opacity = '0.7';
-                }
-                
-                // Show level up notification if applicable
-                if (data.leveled_up) {
-                    showLevelUpNotification(data.new_level);
-                }
-                
-                // Show completion notification
-                showNotification(`Quest Complete! +${points} points 🎉`);
-            } else {
-                button.disabled = false;
-                button.style.opacity = '1';
-                showNotification('Error completing challenge', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            button.disabled = false;
-            button.style.opacity = '1';
-            showNotification('Error completing challenge', 'error');
+        document.body.appendChild(modal);
+        
+        // Character counter
+        document.getElementById('proof-text').addEventListener('input', function() {
+            document.getElementById('char-count').textContent = this.value.length;
+            
+            // Enable/disable submit button based on length
+            const submitBtn = document.querySelector('.btn-submit-proof');
+            submitBtn.disabled = this.value.length < 50;
         });
     }
+
+    // Submit Proof and Complete Challenge
+        function submitProof(challengeId, points) {
+            const proofText = document.getElementById('proof-text').value.trim();
+            
+            if (proofText.length < 50) {
+                showNotification('Please write at least 50 characters', 'error');
+                return;
+            }
+            
+            // Send proof along with completion
+            fetch('/api/complete-challenge/' + challengeId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    proof: proofText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    document.querySelector('.proof-modal').remove();
+                    
+                    // Update button
+                    const button = document.querySelector(`[data-id="${challengeId}"]`);
+                    if (button) {
+                        button.innerText = "✅ Completed!";
+                        button.classList.add("completed-btn");
+                        button.disabled = true;
+                    }
+                    
+                    // Update stats
+                    document.getElementById('user-points').innerText = data.user_points;
+                    document.getElementById('user-level').innerText = data.level;
+                    document.getElementById('user-streak').innerText = data.streak + ' 🔥';
+                    document.getElementById('total-quests').innerText = parseInt(document.getElementById('total-quests').innerText) + 1;
+                    
+                    // Show level up if applicable
+                    if (data.leveled_up) {
+                        showLevelUpNotification(data.new_level);
+                    }
+                    
+                    showNotification(`✓ Proof Verified! +${points} points awarded 🎉`, 'success');
+                } else {
+                    showNotification(data.error || 'Error submitting proof', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error submitting proof', 'error');
+            });
+        }
 
     // Notification function
     function showNotification(message, type = 'success') {

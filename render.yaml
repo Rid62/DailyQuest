@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: dailyquest
+    env: python
+    plan: free
+    buildCommand: >
+      pip install -r requirements.txt
+    startCommand: >
+      gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+
+databases:
+  - name: dailyquest_db
+    dbName: dailyquest
+    user: dailyquest
+    plan: free
+    postgresVersion: 15

@@ -867,3 +867,153 @@ body.streak-galaxy {
   --primary: #667eea;
   --secondary: #a78bfa;
 }
+
+/* ==================== PROOF MODAL ==================== */
+.proof-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.3s ease;
+}
+
+.proof-modal-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.proof-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.proof-modal-header h2 {
+  color: var(--primary);
+  font-size: 1.5em;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 2em;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-modal:hover {
+  color: var(--primary);
+}
+
+.proof-modal-body {
+  padding: 25px;
+}
+
+.challenge-title {
+  font-size: 1.1em;
+  color: var(--dark);
+  margin-bottom: 15px;
+}
+
+.proof-instruction {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 0.95em;
+}
+
+.proof-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1em;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+
+.proof-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.char-count {
+  text-align: right;
+  color: #999;
+  font-size: 0.85em;
+  margin-top: 8px;
+}
+
+.proof-modal-footer {
+  padding: 20px 25px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: var(--dark);
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-submit-proof {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-submit-proof:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit-proof:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
