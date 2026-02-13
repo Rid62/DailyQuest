@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm">
+            <h4>My Stats</h4>
+            <p>Score: <span class="text-primary">{{ user['points'] }}</span></p>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <h3>Today's Quests</h3>
+        <div class="row mt-4">
+            {% for quest in quests %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-primary shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ quest['title'] }}</h5>
+                        <p class="card-text text-muted">{{ quest['description'] }}</p>
+                        <button class="btn btn-outline-success w-100">Complete Quest</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+</div>
+{% endblock %}

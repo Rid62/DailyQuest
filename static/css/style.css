@@ -1,0 +1,13 @@
+footer {
+    min-height: 60px; /* كتحكم فالعلو الأدنى */
+    height: auto;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    margin-top: 10px !important;
+}
+
+/* باش تنقص حتى الحجم ديال الأيقونات إلا كانوا كبار */
+footer svg {
+    width: 10px;
+    height: 10px;
+}
