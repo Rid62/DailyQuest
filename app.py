@@ -84,9 +84,10 @@ def register():
         hashed_password = generate_password_hash(password)
         db = get_db()
         try:
-            db.execute('''INSERT INTO users (username, password_hash, main_category, user_level) 
-                          VALUES (?, ?, ?, ?)''', 
-                       (username, hashed_password, category, level))
+            # تأكد أن السطر داخل دالة generate_daily_quests يبدو هكذا بالضبط:
+            db.execute('''INSERT INTO challenges (user_id, title, description, category) 
+                        VALUES (?, ?, ?, ?)''', 
+           (user_id, q['title'], q['description'], category))
             db.commit()
             flash("Registration successful! Please login.", "success")
             return redirect(url_for('login'))
@@ -141,5 +142,40 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+@app.route('/complete_quest/<int:quest_id>', methods=['POST'])
+
+def generate_daily_quests(user_id, category, level):
+    """توليد 3 مهام يومية باستخدام OpenAI وحفظها في قاعدة البيانات"""
+    
+    # لاحظ أننا استخدمنا {{ }} للأقواس التي تخص JSON و { } للمتغيرات فقط
+    prompt = f"""
+    Create exactly 3 daily challenges for a user interested in {category} at a {level} level.
+    The challenges should be actionable, small, and encouraging.
+    Return ONLY a JSON object with a key "quests" containing a list of objects with "title" and "description".
+    Example format: {{"quests": [{{"title": "Ex", "description": "Ex"}}]}}
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful life coach."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={ "type": "json_object" }
+        )
+
+        content = json.loads(response.choices[0].message.content)
+        quests = content.get('quests', [])
+        
+        db = get_db()
+        for q in quests:
+            db.execute('''INSERT INTO challenges (user_id, title, description, category) 
+                          VALUES (?, ?, ?, ?)''', 
+                       (user_id, q['title'], q['description'], category))
+        db.commit()
+    except Exception as e:
+        print(f"Error calling OpenAI: {e}")
+        flash("We couldn't generate new quests right now.")
 if __name__ == '__main__':
     app.run(debug=True)
