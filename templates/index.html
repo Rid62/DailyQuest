@@ -1,8 +1,69 @@
 {% extends "layout.html" %}
 
+{% block title %}Welcome to DailyQuest{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h1>Welcome to DailyQuest</h1>
-    <p>Your daily dose of quests and challenges!</p>
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light rounded-4 shadow-sm">
+    <div class="col-md-8 p-lg-5 mx-auto my-5">
+        <h1 class="display-3 fw-bold text-primary mb-3">Level Up Your Daily Life</h1>
+        <p class="lead fw-normal text-muted mb-4">
+            DailyQuest transforms your real-world goals into an RPG-style adventure. 
+            Powered by <strong> AI</strong> to give you personalized challenges every single day.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            {% if not session.get('user_id') %}
+                <a class="btn btn-primary btn-lg px-5 rounded-pill shadow" href="{{ url_for('register') }}">Start Your Journey</a>
+                <a class="btn btn-outline-secondary btn-lg px-5 rounded-pill" href="{{ url_for('login') }}">Login</a>
+            {% else %}
+                <a class="btn btn-primary btn-lg px-5 rounded-pill shadow" href="{{ url_for('Dashboard') }}">Back to My Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="product-device shadow-sm d-none d-md-block"></div>
+</div>
+
+<div class="container px-4 py-5" id="features">
+    <h2 class="pb-2 border-bottom fw-bold">Why DailyQuest?</h2>
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+        <div class="feature col text-center">
+            <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded-circle" style="width: 70px; height: 70px;">
+                🤖
+            </div>
+            <h3 class="fs-4 fw-bold">Gemini AI Engine</h3>
+            <p class="text-muted">No more static tasks. AI integration generates smart, actionable quests based on your specific level and interests.</p>
+        </div>
+        <div class="feature col text-center">
+            <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-success bg-gradient fs-2 mb-3 rounded-circle" style="width: 70px; height: 70px;">
+                🏆
+            </div>
+            <h3 class="fs-4 fw-bold">Gamified Progress</h3>
+            <p class="text-muted">Earn XP for every completed quest. Climb the global leaderboard and compete with other students in the CS50 community.</p>
+        </div>
+        <div class="feature col text-center">
+            <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-warning bg-gradient fs-2 mb-3 rounded-circle" style="width: 70px; height: 70px;">
+                📊
+            </div>
+            <h3 class="fs-4 fw-bold">Data Driven</h3>
+            <p class="text-muted">Built with a robust SQLite backend to track your journey, maintain streaks, and analyze your growth over time.</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-dark text-secondary px-4 py-5 text-center rounded-4 mx-md-3">
+    <div class="py-5">
+        <h1 class="display-5 fw-bold text-white">Final Project for CS50x</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="fs-5 mb-4">
+                DailyQuest is a full-stack web application developed as a final requirement for Harvard's CS50x. 
+                It demonstrates the integration of <strong>Flask</strong>, <strong>SQL</strong>, and <strong>Generative AI</strong> to solve real-world productivity challenges.
+            </p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <span class="badge rounded-pill bg-danger px-3 py-2">Python</span>
+                <span class="badge rounded-pill bg-info text-dark px-3 py-2">Flask</span>
+                <span class="badge rounded-pill bg-secondary px-3 py-2">SQLite</span>
+                <span class="badge rounded-pill bg-primary px-3 py-2">Artificial Intelligence</span>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
